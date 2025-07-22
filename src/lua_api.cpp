@@ -13,7 +13,7 @@ using namespace ContentInjector;
 
 lua_State* g_lua{nullptr};
 
-void ensure_enum_type_cache_exists(reframework::API::TypeDefinition* enumType) {
+void ContentInjector::ensure_enum_type_cache_exists(reframework::API::TypeDefinition* enumType) {
     auto typeId = (uintptr_t)enumType->get_runtime_type();
     if (enum_labels_to_value.find(typeId) == enum_labels_to_value.end()) {
         enum_labels_to_value[typeId] = {};
@@ -90,8 +90,6 @@ void ContentInjector::add_enum_entry(sol::object type, std::string label, int64_
         std::unique_lock _{g_enum_edit_mutex};
         ensure_enum_type_cache_exists(typeObj);
         auto typeId = (uintptr_t)typeObj->get_runtime_type();
-        auto l_to_v = enum_labels_to_value[typeId];
-        auto v_to_l = enum_values_to_label[typeId];
 
         auto wide = lua_str_to_wide(label);
         auto whash = std::hash<std::wstring_view>{}(wide);
@@ -121,7 +119,6 @@ void on_lua_state_created(lua_State* l) {
     injector["add_enum_entries"] = &add_enum_entries;
 
     lua["content_injector"] = injector;
-    lua["content_injector_test"] = sol::new_table{};
 }
 
 void on_ref_lua_state_destroyed(lua_State* l) try { g_lua = nullptr; } catch (const std::exception& e) {
