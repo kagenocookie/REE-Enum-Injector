@@ -133,7 +133,7 @@ void loadConfigData() {
     static auto type_str = API::get()->tdb()->find_type("System.String");
 
     API::get()->log_info("Loading enum configs...");
-    std::filesystem::path path = std::filesystem::path("reframework") / "data" / "usercontent" / "injected_enums";
+    std::filesystem::path path = std::filesystem::path("reframework") / "data" / "injected_enums";
     std::filesystem::create_directories(path);
     const auto vm = API::get()->get_vm_context();
 
