@@ -202,13 +202,19 @@ void loadConfigData() {
         auto outValueArray = (API::ManagedObject*)API::get()->create_managed_array(type, orgCount + entryType.second.size());
         outValueArray->add_ref();
 
-        int index = 0;
         API::get()->log_info("Original enum item count: %d", orgCount);
-        for (int i = 0; i < orgCount; ++i) {
-            array_set_item->call(vm, outNameArray, index, (API::ManagedObject*)array_get_item->call(vm, orgNames, i));
-            array_set_item->call(vm, outValueArray, index, (API::ManagedObject*)array_get_item->call(vm, orgValues, i));
-            index++;
+        if (array_get_item == nullptr) {
+            for (int i = 0; i < orgCount; ++i) {
+                outNameArray->invoke("Set", {reinterpret_cast<void*>(i), (API::ManagedObject*)orgNames->invoke("Get", {reinterpret_cast<void*>(i)}).ptr});
+                outValueArray->invoke("Set", {reinterpret_cast<void*>(i), (API::ManagedObject*)orgValues->invoke("Get", {reinterpret_cast<void*>(i)}).ptr});
+            }
+        } else {
+            for (int i = 0; i < orgCount; ++i) {
+                array_set_item->call(vm, outNameArray, i, (API::ManagedObject*)array_get_item->call(vm, orgNames, i));
+                array_set_item->call(vm, outValueArray, i, (API::ManagedObject*)array_get_item->call(vm, orgValues, i));
+            }
         }
+        int index = orgCount;
 
         for (const auto& entry : entryType.second) {
             auto nameHash = entry.first;
@@ -224,8 +230,13 @@ void loadConfigData() {
             case 8: *(uint64_t*)(boxedValue + enum_value_offset) = (uint64_t)value; break;
             }
             API::get()->log_info("Adding custom enum value %d -> %lld", nameHash, value);
-            array_set_item->call(vm, outNameArray, index, (API::ManagedObject*)labelStringPtr);
-            array_set_item->call(vm, outValueArray, index, (API::ManagedObject*)boxedValue);
+            if (array_get_item == nullptr) {
+                outNameArray->invoke("Set", {reinterpret_cast<void*>(index), (API::ManagedObject*)labelStringPtr});
+                outValueArray->invoke("Set", {reinterpret_cast<void*>(index), (API::ManagedObject*)labelStringPtr});
+            } else {
+                array_set_item->call(vm, outNameArray, index, (API::ManagedObject*)labelStringPtr);
+                array_set_item->call(vm, outValueArray, index, (API::ManagedObject*)boxedValue);
+            }
             index++;
         }
 
