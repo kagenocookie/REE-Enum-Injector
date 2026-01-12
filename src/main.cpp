@@ -20,3 +20,9 @@ extern "C" __declspec(dllexport) bool reframework_plugin_initialize(const REFram
 
     return true;
 }
+
+extern "C" __declspec(dllexport) void reframework_plugin_required_version(REFrameworkPluginVersion* version) {
+    version->major = REFRAMEWORK_PLUGIN_VERSION_MAJOR;
+    version->minor = 14;
+    version->patch = REFRAMEWORK_PLUGIN_VERSION_PATCH;
+}

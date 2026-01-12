@@ -1,6 +1,9 @@
 ## REE Enum Injector
 REFramework plugin for injecting custom enum entries for RE Engine games. Since a lot of the games have hardcoded object IDs, this can be necessary for injecting custom content.
 
+### Requirements
+Requires REFramework with Plugin version >= 1.14.0 (**Nightly build 01165 or above** as of right now), or whichever stable release newer than v1.5.9.1.
+
 ### Installation
 - Download the latest release
 - Place the .dll into your game's reframework/plugins folder.
@@ -41,6 +44,7 @@ To verify functionality ingame:
 ```lua
 
 sdk.find_type_definition('System.Enum'):get_method('GetNames'):call(nil, sdk.find_type_definition('app.TopsStyle'):get_runtime_type()):add_ref()
+sdk.find_type_definition('System.Enum'):get_method('GetValues'):call(nil, sdk.find_type_definition('offline.gamemastering.Map.ID'):get_runtime_type())[326].value__
 ```
 
 ### Building
