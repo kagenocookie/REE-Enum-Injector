@@ -42,10 +42,10 @@ int pre_TryParseInternal(int argc, void** argv, REFrameworkTypeDefinitionHandle*
         auto str = get_string_view((API::ManagedObject*)argv[2]);
         auto hash = std::hash<std::wstring_view>{}(str);
 
-        if (DEBUG) {
-            auto typeName = get_string_view((API::ManagedObject*)m_runtimeType_get_FullName->call(argv[0], enumType));
-            API::get()->log_info("Requested overridden enum %ls %d: %ls; whash: %lld", typeName.data(), typeId, str.data(), hash);
-        }
+#if _DEBUG
+        auto typeName = get_string_view((API::ManagedObject*)m_runtimeType_get_FullName->call(argv[0], enumType));
+        API::get()->log_info("Requested overridden enum %ls %d: %ls; whash: %lld", typeName.data(), typeId, str.data(), hash);
+#endif
 
         if (auto it = l_to_v.find(hash); it != l_to_v.end()) {
             auto value = it->second;
@@ -63,10 +63,10 @@ int pre_TryParseInternal(int argc, void** argv, REFrameworkTypeDefinitionHandle*
             auto valuePtr = (void**)argv[4];
             (*valuePtr) = boxedValue;
 
-            if (DEBUG) {
-                auto typeName = get_string_view((API::ManagedObject*)m_runtimeType_get_FullName->call(argv[0], enumType));
-                API::get()->log_info("Returning enum override %ls: %ls -> %d", typeName.data(), str.data(), value);
-            }
+#if _DEBUG
+            auto typeName = get_string_view((API::ManagedObject*)m_runtimeType_get_FullName->call(argv[0], enumType));
+            API::get()->log_info("Returning enum override %ls: %ls -> %d", typeName.data(), str.data(), value);
+#endif
             parse_return_override = true;
             return REFRAMEWORK_HOOK_SKIP_ORIGINAL;
         }
@@ -101,10 +101,10 @@ int pre_ToString(int argc, void** argv, REFrameworkTypeDefinitionHandle* arg_tys
             case 8: value = *(uint64_t*)(enumType + enum_value_offset); break;
             }
 
-            if (DEBUG) {
-                auto typeName = get_string_view((API::ManagedObject*)m_runtimeType_get_FullName->call(argv[0], typeId));
-                API::get()->log_info("Enum override ToString requested %ls: %lld", typeName.data(), value);
-            }
+#if _DEBUG
+            auto typeName = get_string_view((API::ManagedObject*)m_runtimeType_get_FullName->call(argv[0], typeId));
+            API::get()->log_info("Enum override ToString requested %ls: %lld", typeName.data(), value);
+#endif
 
             if (auto it2 = v_to_l.find(value); it2 != v_to_l.end()) {
                 tostring_return_override = it2->second;
@@ -177,6 +177,9 @@ void loadConfigData() {
                     managed_str->add_ref();
                     enum_values_to_label[curTypeId][value] = managed_str;
                     enum_labels_to_value[curTypeId][whash] = value;
+#if _DEBUG
+                    API::get()->log_info("Found enum entry: %ls = %lld", wname.c_str(), value);
+#endif
                 }
             }
         } catch (...) {
@@ -189,16 +192,31 @@ void loadConfigData() {
     API::get()->log_info("Preparing injected arrays...");
     for (const auto& entryType : enum_labels_to_value) {
         auto typeId = entryType.first;
+#if _DEBUG
+        API::get()->log_info("Handling enum type id: %d", typeId);
+#endif
         auto type = typedefs[entryType.first];
+#if _DEBUG
+        API::get()->log_info("Fetching original names for enum: %s", type->get_full_name().c_str());
+#endif
         auto orgNames = (API::ManagedObject*)enum_get_Names->call(vm, type->get_runtime_type());
+#if _DEBUG
+        API::get()->log_info("Fetching original values...");
+#endif
         auto orgValues = (API::ManagedObject*)enum_get_Values->call(vm, type->get_runtime_type());
         int orgCount = (int)array_get_Length->call(vm, orgNames);
 
         std::vector<API::ManagedObject*> names{};
         std::vector<API::ManagedObject*> values{};
 
+#if _DEBUG
+        API::get()->log_info("Intantiating new names array (size %d)...", orgCount + entryType.second.size());
+#endif
         auto outNameArray = (API::ManagedObject*)API::get()->create_managed_array(type_str, orgCount + entryType.second.size());
         outNameArray->add_ref();
+#if _DEBUG
+        API::get()->log_info("Intantiating new values array...");
+#endif
         auto outValueArray = (API::ManagedObject*)API::get()->create_managed_array(type, orgCount + entryType.second.size());
         outValueArray->add_ref();
 
@@ -229,7 +247,7 @@ void loadConfigData() {
             case 4: *(uint32_t*)(boxedValue + enum_value_offset) = (uint32_t)value; break;
             case 8: *(uint64_t*)(boxedValue + enum_value_offset) = (uint64_t)value; break;
             }
-            API::get()->log_info("Adding custom enum value %d -> %lld", nameHash, value);
+            API::get()->log_info("Adding custom enum hash %d -> value %lld", nameHash, value);
             if (array_get_item == nullptr) {
                 outNameArray->invoke("Set", {reinterpret_cast<void*>(index), (API::ManagedObject*)labelStringPtr});
                 outValueArray->invoke("Set", {reinterpret_cast<void*>(index), (API::ManagedObject*)labelStringPtr});

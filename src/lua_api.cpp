@@ -26,7 +26,9 @@ void ContentInjector::ensure_enum_type_cache_exists(reframework::API::TypeDefini
         } else {
             enum_value_sizes[typeId] = 4;
         }
-        // API::get()->log_info("Added cache structs for new enum with size %d", enum_value_sizes[typeId]);
+#if _DEBUG
+        API::get()->log_info("Added cache structs for new enum %s with value size %d", enumType->get_full_name().c_str(), enum_value_sizes[typeId]);
+#endif
     }
 }
 
@@ -64,10 +66,10 @@ void ContentInjector::add_enum_entries(sol::object type, sol::table table) {
 
             l_to_v[std::hash<std::wstring_view>{}(wide)] = value;
             v_to_l[value] = str;
-            if (DEBUG) {
-                API::get()->log_info("Added enum override %s %d: %s (w: %ls) -> %d", typeObj->get_full_name().c_str(), typeId, label.data(),
-                    wide.data(), value);
-            }
+#if _DEBUG
+            API::get()->log_info("Added enum override %s %d: %s (w: %ls) -> %d", typeObj->get_full_name().c_str(), typeId, label.data(),
+                wide.data(), value);
+#endif
         }
     }
 }
@@ -97,10 +99,10 @@ void ContentInjector::add_enum_entry(sol::object type, std::string label, int64_
         auto str = API::get()->create_managed_string(wide.data());
         str->add_ref();
         enum_values_to_label[typeId][value] = str;
-        if (DEBUG) {
-            API::get()->log_info("Added enum override %s %d: %s (%ls %lld => %lld)", typeObj->get_full_name().c_str(), typeId, label.data(),
-                wide.data(), whash, value);
-        }
+#if _DEBUG
+        API::get()->log_info("Added enum override %s %d: %s (%ls %lld => %lld)", typeObj->get_full_name().c_str(), typeId, label.data(),
+            wide.data(), whash, value);
+#endif
     }
 }
 
