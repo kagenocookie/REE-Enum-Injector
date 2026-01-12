@@ -193,7 +193,7 @@ void loadConfigData() {
     for (const auto& entryType : enum_labels_to_value) {
         auto typeId = entryType.first;
 #if _DEBUG
-        API::get()->log_info("Handling enum type id: %d", typeId);
+        API::get()->log_info("Handling enum type id: %u", typeId);
 #endif
         auto type = typedefs[entryType.first];
 #if _DEBUG
@@ -238,20 +238,20 @@ void loadConfigData() {
             auto nameHash = entry.first;
             auto value = entry.second;
             auto labelStringPtr = enum_values_to_label[typeId][value];
-            auto boxedValue = create_instance_func->call<API::ManagedObject*>(vm, type->get_runtime_type());
-            boxedValue->add_ref();
-            auto enumSize = enum_value_sizes[typeId];
-            switch (enumSize) {
-            case 2: *(uint16_t*)(boxedValue + enum_value_offset) = (uint16_t)value; break;
-            default:
-            case 4: *(uint32_t*)(boxedValue + enum_value_offset) = (uint32_t)value; break;
-            case 8: *(uint64_t*)(boxedValue + enum_value_offset) = (uint64_t)value; break;
-            }
-            API::get()->log_info("Adding custom enum hash %d -> value %lld", nameHash, value);
+            API::get()->log_info("Adding custom enum[%d] hash %u -> value %lld", index, nameHash, value);
             if (array_get_item == nullptr) {
                 outNameArray->invoke("Set", {reinterpret_cast<void*>(index), (API::ManagedObject*)labelStringPtr});
-                outValueArray->invoke("Set", {reinterpret_cast<void*>(index), (API::ManagedObject*)labelStringPtr});
+                outValueArray->invoke("Set", {reinterpret_cast<void*>(index), reinterpret_cast<void*>(value)});
             } else {
+                auto boxedValue = create_instance_func->call<API::ManagedObject*>(vm, type->get_runtime_type());
+                boxedValue->add_ref();
+                auto enumSize = enum_value_sizes[typeId];
+                switch (enumSize) {
+                case 2: *(uint16_t*)(boxedValue + enum_value_offset) = (uint16_t)value; break;
+                default:
+                case 4: *(uint32_t*)(boxedValue + enum_value_offset) = (uint32_t)value; break;
+                case 8: *(uint64_t*)(boxedValue + enum_value_offset) = (uint64_t)value; break;
+                }
                 array_set_item->call(vm, outNameArray, index, (API::ManagedObject*)labelStringPtr);
                 array_set_item->call(vm, outValueArray, index, (API::ManagedObject*)boxedValue);
             }
