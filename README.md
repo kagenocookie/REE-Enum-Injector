@@ -6,7 +6,15 @@ REFramework plugin for injecting custom enum entries for RE Engine games. Since 
 - Place the .dll into your game's reframework/plugins folder.
 
 ### Config support
-The plugin automatically scans the `reframework/data/injected_enums` folder for .txt files containing custom enum entries. A .txt file can contain any number of enums. The syntax is `@app.EnumClassname` to set the enum for the following assign statements and `Label 12345` pairs, one per line, of a label and value that should be added to the enum.
+The plugin automatically scans the `reframework/data/injected_enums` folder for .txt files containing custom enum entries. A .txt file can contain any number of enums. The syntax is `@app.EnumClassname` to set the enum for the following assign statements and `Label 12345` pairs, one per line, of a label and value that should be added to the enum. Example:
+```
+@app.EnumClassname
+Label 12345
+Label2 5678
+
+@app.Enum2
+NewLabel 42
+```
 
 ### Lua API
 
