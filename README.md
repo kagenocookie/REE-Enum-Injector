@@ -47,7 +47,8 @@ sdk.find_type_definition('System.Enum'):get_method('GetNames'):call(nil, sdk.fin
 Requires cmake and a valid windows c++ compiler
 
 ```sh
-cmake -S . -B build
+# The debug build enables extra logging for troubleshooting
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
 cmake --build build
 ```
 Then copy the build/Debug/content_injector.dll into the game's reframework/plugins folder.
